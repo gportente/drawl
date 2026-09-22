@@ -1,0 +1,7 @@
+PySide6>=6.9
+sherpa-onnx>=1.13
+sounddevice>=0.5
+numpy>=2.0
+
+# Optional fallback for languages outside Parakeet's 25
+faster-whisper>=1.2

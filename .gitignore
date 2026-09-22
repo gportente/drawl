@@ -1,0 +1,15 @@
+# environment and build artefacts
+.venv/
+build/
+dist/
+__pycache__/
+*.pyc
+
+# drawl.spec is NOT ignored: it is the build recipe, not a generated file.
+# (PyInstaller only writes a .spec when invoked without one, which never
+# happens here.)
+
+# working files
+*.log
+*.wav
+!tools/demo/*.wav
