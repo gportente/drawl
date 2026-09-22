@@ -22,7 +22,7 @@ were typing in. No audio ever leaves your computer.
 installer (49 MB) or portable archive (75 MB). On first launch it downloads the
 recognition model, ~490 MB: an internet connection is needed only for that step.
 
-To work from source, see *Installing* below.
+To work on drawl instead of just using it, see *Running from source*.
 
 ## If Windows blocks it
 
@@ -40,72 +40,16 @@ around it:
   Since the April 2026 cumulative update it can be turned back on afterwards;
   on earlier builds that took reinstalling Windows.
 - Run it from source instead. `pythonw.exe` is signed by the Python Software
-  Foundation, so Smart App Control lets it through: see *Installing* below.
+  Foundation, so Smart App Control lets it through: see *Running from source*.
 
 Signing is the real fix and is on the list. It is not a switch that can be
 flipped for free: it needs a certificate from a recognised authority, and even
 then SmartScreen reputation accrues over successive releases rather than
 arriving with the first one.
 
-## How it is built
-
-| Piece | Choice | Why |
-|---|---|---|
-| Recognition | [Parakeet TDT 0.6B v3](https://github.com/k2-fsa/sherpa-onnx) via sherpa-onnx | ~13× realtime on CPU, 25 European languages including English and Italian |
-| Fallback | faster-whisper (`large-v3-turbo`) | covers languages outside Parakeet's 25 |
-| Interface | PySide6 + QML (Qt Quick) | GPU-accelerated animation, frameless translucent window |
-| Output | Clipboard + synthetic Ctrl+V | works in any application, with no integration |
-
-Inference runs entirely in native code (ONNX Runtime / CTranslate2): Python only
-orchestrates, and does not show up in the timings.
-
-## Installing
-
-```powershell
-python -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-The Parakeet model (~490 MB compressed) downloads itself on first launch into
-`%LOCALAPPDATA%\drawl\models`, with progress shown under the pill.
-
 ## Using it
 
-```powershell
-.venv\Scripts\pythonw.exe -m drawl     # no console window
-```
-
-### Desktop shortcut
-
-```powershell
-.venv\Scripts\python.exe tools\make_icon.py   # generates drawl\ui\drawl.ico
-
-$root = (Get-Location).Path
-$ws = New-Object -ComObject WScript.Shell
-$s = $ws.CreateShortcut((Join-Path ([Environment]::GetFolderPath("Desktop")) "drawl.lnk"))
-$s.TargetPath = "$root\.venv\Scripts\pythonw.exe"
-$s.Arguments = "-m drawl"
-$s.WorkingDirectory = $root
-$s.IconLocation = "$root\drawl\ui\drawl.ico,0"
-$s.Save()
-```
-
-The target is `pythonw.exe` rather than `python.exe`: being the GUI-subsystem
-build of Python, it opens no console window.
-
-### Starting with Windows
-
-Copy the same shortcut into the Startup folder:
-
-```powershell
-Copy-Item (Join-Path ([Environment]::GetFolderPath("Desktop")) "drawl.lnk") `
-          ([Environment]::GetFolderPath("Startup"))
-```
-
-Turn it off from *Task Manager → Startup apps*, or by deleting that `.lnk`.
-Idle, drawl takes ~125 MB, because the model does not stay in memory: see
-*Resource use*. A second copy started by mistake notices the first and exits,
-rather than sitting there without a hotkey.
+However you installed it, drawl behaves the same.
 
 <p align="center">
   <img src="docs/states.png" width="684"
@@ -121,6 +65,16 @@ rather than sitting there without a hotkey.
 The two secondary buttons are, for now, *copy the last transcription* and
 *toggle auto-paste* (with paste off the text only goes to the clipboard). They
 are the two slots kept for future features.
+
+On first launch the Parakeet model (~490 MB compressed) downloads itself into
+`%LOCALAPPDATA%\drawl\models`, with progress shown under the pill. After that
+drawl never needs the network again.
+
+The installer offers to create the desktop shortcut and to start drawl when you
+sign in to Windows; both are optional, and the second can be turned off later
+from *Task Manager → Startup apps*. Idle, drawl takes ~125 MB, because the model
+does not stay in memory: see *Resource use*. A second copy started by mistake
+notices the first and exits, rather than sitting there without a hotkey.
 
 ## Settings
 
@@ -146,6 +100,18 @@ column to `drawl/i18n.py`: no build step, no compiled catalogues.
 
 Recognition is a separate matter and needs no setting — Parakeet detects the
 spoken language on its own, across 25 European languages.
+
+## How it is built
+
+| Piece | Choice | Why |
+|---|---|---|
+| Recognition | [Parakeet TDT 0.6B v3](https://github.com/k2-fsa/sherpa-onnx) via sherpa-onnx | ~13× realtime on CPU, 25 European languages including English and Italian |
+| Fallback | faster-whisper (`large-v3-turbo`) | covers languages outside Parakeet's 25 |
+| Interface | PySide6 + QML (Qt Quick) | GPU-accelerated animation, frameless translucent window |
+| Output | Clipboard + synthetic Ctrl+V | works in any application, with no integration |
+
+Inference runs entirely in native code (ONNX Runtime / CTranslate2): Python only
+orchestrates, and does not show up in the timings.
 
 ## Measured performance
 
@@ -209,6 +175,51 @@ with a broadcast error in the self-attention. Audio is therefore split into
 
 Chunked, the realtime factor stays flat at around **15×** at any duration,
 memory settles below 1.7 GB, and the six-minute-forty ceiling disappears.
+
+## Running from source
+
+Needed only to work on drawl, or to sidestep Smart App Control: the Python
+interpreter is signed, so it runs where the packaged executable is refused.
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\pythonw.exe -m drawl     # no console window
+```
+
+The launcher is `pythonw.exe` rather than `python.exe`: being the GUI-subsystem
+build of Python, it opens no console window.
+
+There is no installer this way, so the shortcuts have to be made by hand:
+
+```powershell
+.venv\Scripts\python.exe tools\make_icon.py   # generates drawl\ui\drawl.ico
+
+$root = (Get-Location).Path
+$ws = New-Object -ComObject WScript.Shell
+$s = $ws.CreateShortcut((Join-Path ([Environment]::GetFolderPath("Desktop")) "drawl.lnk"))
+$s.TargetPath = "$root\.venv\Scripts\pythonw.exe"
+$s.Arguments = "-m drawl"
+$s.WorkingDirectory = $root
+$s.IconLocation = "$root\drawl\ui\drawl.ico,0"
+$s.Save()
+
+# and, to start it with Windows:
+Copy-Item (Join-Path ([Environment]::GetFolderPath("Desktop")) "drawl.lnk") `
+          ([Environment]::GetFolderPath("Startup"))
+```
+
+## Building the packages
+
+```powershell
+.\tools\build.ps1
+```
+
+Produces both `dist/drawl-<version>-setup.exe` and
+`dist/drawl-<version>-portable.zip`. The installer needs
+[Inno Setup](https://jrsoftware.org/isinfo.php)
+(`winget install --id JRSoftware.InnoSetup`); without it the portable archive is
+still produced. The ASR model is in neither: it downloads on first launch.
 
 ## Layout
 
