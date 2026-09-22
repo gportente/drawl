@@ -24,6 +24,29 @@ recognition model, ~490 MB: an internet connection is needed only for that step.
 
 To work from source, see *Installing* below.
 
+## If Windows blocks it
+
+The executables are **not code-signed**, which has two consequences.
+
+**SmartScreen** shows a warning on first launch: *More info* → *Run anyway*.
+
+**Smart App Control**, on the other hand, blocks the app outright, with no way
+past it — the dialog only offers *OK* and *Get app from Store*. It is on by
+default on clean Windows 11 installations, and it refuses unsigned executables
+regardless of where they came from. Until drawl is signed, there are two ways
+around it:
+
+- Turn Smart App Control off, under *Windows Security → App & browser control*.
+  Since the April 2026 cumulative update it can be turned back on afterwards;
+  on earlier builds that took reinstalling Windows.
+- Run it from source instead. `pythonw.exe` is signed by the Python Software
+  Foundation, so Smart App Control lets it through: see *Installing* below.
+
+Signing is the real fix and is on the list. It is not a switch that can be
+flipped for free: it needs a certificate from a recognised authority, and even
+then SmartScreen reputation accrues over successive releases rather than
+arriving with the first one.
+
 ## How it is built
 
 | Piece | Choice | Why |
@@ -263,7 +286,10 @@ document once ended up in a published recording.
   transcript: "hey drawl" comes out as *Hey Drawl*, *Hey Droll*, *Ey Droll*
 - Push-to-talk: `RegisterHotKey` reports the press, never the release
 - NPU acceleration on XDNA2 through the Ryzen AI software
-- Code signing, to stop the SmartScreen warning on first launch
+- Code signing, so Smart App Control stops blocking the app outright and
+  SmartScreen stops warning. Azure Artifact Signing (formerly Trusted Signing)
+  is around $10 a month and is open to businesses and self-employed individuals
+  in the EU, UK, US and Canada
 
 ## Licence
 
