@@ -59,12 +59,14 @@ However you installed it, drawl behaves the same.
 - **Ctrl+Shift+Space** — start and stop dictation, from any application
 - **Click the orb** — the same thing
 - **Drag the orb** — move the pill; the position is remembered
-- **Hover** — reveals the two secondary buttons and the status bar
-- **Tray icon** — show/hide, dictate, quit
+- **Hover** — reveals the secondary buttons and the status bar
+- **Ctrl+PrtScn** — screenshot, then annotate it (see below)
+- **Shift+PrtScn** — record the screen; the same keys again stop it
+- **Tray icon** — show/hide, dictate, screenshot, record, quit
 
-The two secondary buttons are, for now, *copy the last transcription* and
-*toggle auto-paste* (with paste off the text only goes to the clipboard). They
-are the two slots kept for future features.
+The secondary buttons are *copy the last transcription*, *toggle auto-paste*
+(with paste off the text only goes to the clipboard), *screenshot* and *record
+the screen*.
 
 On first launch the Parakeet model (~490 MB compressed) downloads itself into
 `%LOCALAPPDATA%\drawl\models`, with progress shown under the pill. After that
@@ -75,6 +77,65 @@ sign in to Windows; both are optional, and the second can be turned off later
 from *Task Manager → Startup apps*. Idle, drawl takes ~125 MB, because the model
 does not stay in memory: see *Resource use*. A second copy started by mistake
 notices the first and exits, rather than sitting there without a hotkey.
+
+## Screenshots and screen recording
+
+Both start the same way: the screens freeze, and a click takes the window under
+the pointer (the whole screen when over the desktop), a drag takes an area,
+Enter takes the whole screen, Esc or a right click cancels. The size shown next
+to the selection is in real pixels, the ones the file will have. The pill never
+appears in either: it is excluded from capture.
+
+<p align="center">
+  <img src="docs/screenshot.png" width="820"
+       alt="A screenshot: hovering highlights one window, then another; an area is dragged out and opens in the editor, where the email and IBAN are pixelated, the failed payment is highlighted, and a rectangle, an arrow, a note and two numbered steps point to the Update payment button.">
+</p>
+
+**A screenshot** lands on the clipboard straight away and opens in the editor:
+
+| Tool | Key | |
+|---|---|---|
+| Select and move | V | drag a shape to move it, its handles to reshape it; Del removes it |
+| Arrow, line | A, L | Shift snaps to 45° |
+| Rectangle, ellipse | R, E | Shift draws squares and circles; *Filled shapes* fills them |
+| Pen, highlighter | P, H | the highlighter is translucent; Shift draws it straight |
+| Text | T | Enter starts a new line, Esc finishes; double click edits it again |
+| Numbered steps | N | 1, 2, 3… each click, carrying on from the highest |
+| Pixelate | B | hides passwords and personal data |
+| Crop | C | Ctrl+Z brings the rest back |
+
+Eight colours and three sizes, with keys 1–3, apply to the next shape and to the
+selected one. Ctrl+Z / Ctrl+Y undo and redo, Ctrl+C copies the annotated image,
+Ctrl+S saves a PNG to `Pictures\drawl`, Ctrl+Shift+S asks where (PNG or JPEG).
+Pixelation is used instead of blur on purpose: a blur can be partly reversed,
+blocks of a single colour cannot.
+
+**A recording** is an H.264 MP4 in `Videos\drawl`. While it runs, a red border
+marks the area (it stays out of the video), the pill shows the elapsed time and
+its red button stops it; when the file is ready a notification offers to show
+it in Explorer. There is no audio for now.
+
+<p align="center">
+  <img src="docs/recording.png" width="820"
+       alt="A recording: an area is chosen the same way, a red border marks it while the pill counts the seconds, and the pill's red button stops it and reports the saved file.">
+</p>
+
+<p align="center">
+  <sub>The real selector, editor and pill, driven by real mouse and keyboard
+  events over a made-up desktop; the pointer is drawn in afterwards. In the
+  recording the clock runs faster than real time.</sub>
+</p>
+
+Recording uses Qt Multimedia and the Media Foundation encoder that comes with
+Windows, so it needs no FFmpeg installed: the libraries ship with PySide6. On a
+2560×1440 screen at 30 fps:
+
+| What | CPU | Size |
+|---|---|---|
+| whole screen | 103 % of one core | 6.6 MB for 8 s |
+| 1280×720 area | 59 % of one core | 1.0 MB for 8 s |
+
+It costs the package ~15 MB: the portable archive goes from 78 to 93 MB.
 
 ## Settings
 
@@ -87,6 +148,11 @@ notices the first and exits, rather than sitting there without a hotkey.
 | `hotkey` | `ctrl+shift+space` | `ctrl+alt+space` is often already taken on Windows |
 | `auto_paste` | `true` | if `false`, the text only reaches the clipboard |
 | `input_device` | `null` | microphone index or name; `null` is the system default |
+| `screenshot_hotkey` | `ctrl+printscreen` | `printscreen` rather than letters, so no application loses a shortcut |
+| `record_hotkey` | `shift+printscreen` | starts and stops recording |
+| `screenshot_dir` | `null` | `null` is `Pictures\drawl` |
+| `recording_dir` | `null` | `null` is `Videos\drawl` |
+| `record_fps` | `30` | frame rate of recordings |
 | `num_threads` | `10` | inference threads |
 | `unload_after_s` | `180` | seconds idle before freeing the RAM; `0` never does |
 | `whisper_model` | `large-v3-turbo` | only used with `engine: whisper` |
@@ -235,13 +301,24 @@ drawl/
   output/inject.py     synthetic Ctrl+V into the active window
   output/hotkey.py     global hotkey (RegisterHotKey on its own thread)
   output/single_instance.py  stops a second copy running without a hotkey
+  capture/grab.py      freezing the screens for the selection
+  capture/win.py       excluding windows from capture, listing windows to snap to
+  capture/recorder.py  screen recording to MP4
+  capture/shapes.py    the annotations: model, hit testing, painting
+  ui/Selector.qml      choosing a window or an area
+  ui/Editor.qml        the screenshot editor
+  ui/canvas.py         the editor's drawing surface: tools, selection, undo
+  ui/capture.py        screenshots and recordings from hotkey to saved file
   ui/Main.qml          the pill: orb, buttons, status bar
   ui/controller.py     QML <-> engines bridge, states and model memory
 tests/test_pipeline.py end-to-end WAV -> text
 tests/test_segment.py  long-audio chunking
 tests/test_paste.py    the synthetic Ctrl+V
+tests/test_annotate.py annotations, and the editor driven by mouse and keyboard
+tests/test_record.py   a real recording of the screen, checked with a player
 tools/make_icon.py     generates drawl.ico for the shortcuts
 tools/make_demo.py     generates the README images in docs/
+tools/make_capture_demo.py  the same, for screenshots and recording
 tools/build.ps1        produces the installer and the portable archive
 ```
 
@@ -251,6 +328,8 @@ tools/build.ps1        produces the installer and the portable archive
 .venv\Scripts\python.exe tests\test_pipeline.py some_audio.wav
 .venv\Scripts\python.exe tests\test_segment.py
 .venv\Scripts\python.exe tests\test_paste.py
+.venv\Scripts\python.exe tests\test_annotate.py
+.venv\Scripts\python.exe tests\test_record.py
 ```
 
 The first loads the application's real engine, transcribes the file and checks
@@ -258,7 +337,7 @@ that the microphone opens at the configured rate.
 
 ## Implementation notes
 
-Five behaviours worth remembering, all commented in the code:
+Behaviours worth remembering, all commented in the code:
 
 - With the flags `Qt.Tool | Qt.WindowDoesNotAcceptFocus` a `HoverHandler` never
   receives hover events: a `MouseArea` is needed instead.
@@ -270,6 +349,17 @@ Five behaviours worth remembering, all commented in the code:
   silently and the handler that called it stops, with no visible error.
 - Two windows that are both "always on top" have no guaranteed order between
   them: whichever must stay above needs an explicit `raise_()`.
+
+- A `rect` read from a QML property is a live reference, not a copy: change
+  what it is bound to and the variable changes with it. Copy the numbers out
+  first.
+- `QQuickPaintedItem.paint()` runs on the render thread while the GUI thread
+  waits. That is fine under `app.exec()`, which releases the GIL, but QTest's
+  waits do not, so the tests use `QSG_RENDER_LOOP=basic`.
+- `SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE)` hides a window from both
+  GDI screenshots and Windows.Graphics.Capture: that is how the pill and the
+  recording border stay out of every capture.
+- The first frame from `QScreenCapture` is black: the recorder drops it.
 
 **Dragging.** The pill does not use `startSystemMove()`; it moves itself, asking
 the operating system where the pointer is on every event. Windows' own drag
@@ -287,6 +377,10 @@ the pointer.
 the scene paints in its own corner. Without that check the first frame can
 portray whatever window sits underneath — which is exactly how a private
 document once ended up in a published recording.
+
+`tools/make_capture_demo.py` goes further and never reads the screen at all:
+each frame is the window's own scene, rendered by `QQuickWindow.grabWindow()`
+on Qt's offscreen platform, so there is nothing underneath to leak.
 
 ## To do
 

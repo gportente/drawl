@@ -20,6 +20,7 @@ _MODS = {"alt": MOD_ALT, "ctrl": MOD_CONTROL, "control": MOD_CONTROL,
 
 _KEYS = {"space": 0x20, "enter": 0x0D, "return": 0x0D, "tab": 0x09, "esc": 0x1B,
          "escape": 0x1B, "backspace": 0x08, "insert": 0x2D, "delete": 0x2E,
+         "printscreen": 0x2C, "prtsc": 0x2C, "pause": 0x13,
          **{f"f{i}": 0x6F + i for i in range(1, 13)}}
 
 

@@ -21,6 +21,14 @@ DEFAULTS = {
     # 0 keeps it loaded for good (idle ~820 MB instead of ~125).
     "unload_after_s": 180,
     "whisper_model": "large-v3-turbo",
+    # Screenshots and screen recordings. PrintScreen rather than letters, so
+    # the hotkeys do not steal a shortcut from the application in front
+    # (Ctrl+Shift+4 and 5 are number formats in Excel).
+    "screenshot_hotkey": "ctrl+printscreen",
+    "record_hotkey": "shift+printscreen",
+    "screenshot_dir": None,    # null: Pictures\drawl
+    "recording_dir": None,     # null: Videos\drawl
+    "record_fps": 30,
     "orb_x": -1,               # -1 means "place it automatically"
     "orb_y": -1,
 }

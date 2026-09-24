@@ -11,14 +11,19 @@ Window {
     readonly property int padding: 8
     readonly property int barH: orbSize + padding * 2          // 76
     readonly property int collapsedW: barH
-    readonly property int expandedW: barH + 40 * 2 + padding * 2
+    readonly property int buttons: 4
+    readonly property int expandedW: barH + buttons * 40 + (buttons - 1) * 8 + padding
     readonly property int expandedH: barH + 30
 
+    // A screen recording keeps the pill open too, so the stop button is in
+    // reach; the pill itself never appears in the video (see app.py).
     readonly property bool busy: ctl.state === "recording" || ctl.state === "transcribing"
+                                 || cap.recording
     // Several hover sources: the backing MouseArea covers the window, but when
     // the pointer is over a button that button receives the event instead.
     readonly property bool open: hover.containsMouse || orbMouse.containsMouse
-                                 || copyBtn.hovered || pasteBtn.hovered || busy
+                                 || copyBtn.hovered || pasteBtn.hovered
+                                 || shotBtn.hovered || recBtn.hovered || busy
 
     // Palette
     readonly property color glass:   "#0E1014"
@@ -227,6 +232,26 @@ Window {
                 onActivated: on = ctl.toggleAutoPaste()
                 Component.onCompleted: on = ctl.autoPasteEnabled()
             }
+
+            SatelliteButton {
+                id: shotBtn
+                tip: i18n.t("tip.screenshot")
+                paths: ["M4 8.5 L 4 18.5 L 20 18.5 L 20 8.5 L 16.2 8.5 L 14.7 6 L 9.3 6 L 7.8 8.5 Z",
+                        "M9 13 a 3 3 0 1 0 6 0 a 3 3 0 1 0 -6 0"]
+                onActivated: cap.screenshot()
+            }
+
+            SatelliteButton {
+                id: recBtn
+                tip: cap.recording ? i18n.t("tip.stopRecording") : i18n.t("tip.record")
+                accent: cap.recording
+                accentColor: root.recA
+                paths: cap.recording
+                       ? ["M8.5 8.5 L 15.5 8.5 L 15.5 15.5 L 8.5 15.5 Z"]
+                       : ["M5 12 a 7 7 0 1 0 14 0 a 7 7 0 1 0 -14 0",
+                          "M10 12 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0"]
+                onActivated: cap.toggleRecording()
+            }
         }
     }
 
@@ -252,10 +277,14 @@ Window {
             elide: Text.ElideRight
 
             readonly property string hoveredTip:
-                copyBtn.hovered ? copyBtn.tip : (pasteBtn.hovered ? pasteBtn.tip : "")
+                copyBtn.hovered ? copyBtn.tip : pasteBtn.hovered ? pasteBtn.tip
+                : shotBtn.hovered ? shotBtn.tip : recBtn.hovered ? recBtn.tip : ""
 
-            text: hoveredTip.length > 0 ? hoveredTip : ctl.status
-            color: ctl.state === "error" ? root.recA : root.muted
+            text: hoveredTip.length > 0 ? hoveredTip
+                  : cap.recording ? "●  " + cap.elapsed + "   " + i18n.t("capture.recording")
+                  : ctl.status
+            color: ctl.state === "error" || (cap.recording && hoveredTip.length === 0)
+                   ? root.recA : root.muted
             font.pixelSize: 11
             font.family: "Segoe UI"
         }

@@ -273,6 +273,11 @@ class Controller(QObject):
         self._config["orb_x"], self._config["orb_y"] = x, y
         self._config.save()
 
+    @Slot(str)
+    def show_status(self, message: str) -> None:
+        """A message from elsewhere in the app, such as a finished recording."""
+        self._set_state(self._state, message)
+
     @Slot()
     def quit(self) -> None:
         QGuiApplication.quit()

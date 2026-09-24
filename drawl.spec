@@ -15,6 +15,10 @@ qml_files = [
     ("drawl/ui/Main.qml", "drawl/ui"),
     ("drawl/ui/Icon.qml", "drawl/ui"),
     ("drawl/ui/SatelliteButton.qml", "drawl/ui"),
+    ("drawl/ui/Selector.qml", "drawl/ui"),
+    ("drawl/ui/Editor.qml", "drawl/ui"),
+    ("drawl/ui/EditorButton.qml", "drawl/ui"),
+    ("drawl/ui/RecordFrame.qml", "drawl/ui"),
     ("drawl/ui/drawl.ico", "drawl/ui"),
 ]
 
@@ -37,7 +41,7 @@ a = Analysis(
         "tkinter", "matplotlib", "scipy", "pandas", "PIL", "pytest",
         "PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets",
         "PySide6.Qt3DCore", "PySide6.Qt3DRender", "PySide6.QtCharts",
-        "PySide6.QtDataVisualization", "PySide6.QtMultimedia",
+        "PySide6.QtDataVisualization",
         "PySide6.QtPdf", "PySide6.QtSql", "PySide6.QtTest",
     ],
     noarchive=False,
@@ -46,15 +50,16 @@ a = Analysis(
 # The PySide6 hook copies Qt's DLLs regardless of `excludes`, which only act on
 # Python modules: Qt6WebEngineCore alone weighs 194 MB. They have to be dropped
 # here, after the analysis. drawl uses QtCore, QtGui, QtWidgets, QtQml, QtQuick
-# and QtQuickShapes; everything else is ballast.
+# QtQuickShapes and QtMultimedia (screen recording, with the FFmpeg libraries
+# PySide6 ships); everything else is ballast.
 UNUSED_QT = (
     "Qt6WebEngine", "QtWebEngine", "Qt6Pdf", "Qt6Quick3D", "Qt6Charts",
-    "Qt6DataVisualization", "Qt6Multimedia", "Qt6Sql", "Qt6Test",
+    "Qt6DataVisualization", "Qt6Sql", "Qt6Test",
     "Qt6Designer", "Qt6Help", "Qt6Bluetooth", "Qt6Nfc", "Qt6SerialPort",
     "Qt6Sensors", "Qt6WebSockets", "Qt6WebChannel", "Qt6RemoteObjects",
     "Qt6Scxml", "Qt6TextToSpeech", "Qt63D", "Qt6Spatial",
     "qml/QtQuick3D", "qml/QtCharts", "qml/QtDataVisualization",
-    "qml/QtMultimedia", "qml/QtWebEngine", "qml/QtWebSockets",
+    "qml/QtWebEngine", "qml/QtWebSockets",
     "qml/Qt3D", "qml/QtSensors", "qml/QtTextToSpeech",
     "translations/qtwebengine",
     # Qt Quick's ready-made controls are not needed: the pill is made of

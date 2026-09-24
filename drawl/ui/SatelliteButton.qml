@@ -8,6 +8,7 @@ Rectangle {
     property string tip: ""
     property bool dimmed: false
     property bool accent: false
+    property color accentColor: "#6EE7F9"
     readonly property bool hovered: mouse.containsMouse
 
     signal activated()
@@ -34,7 +35,7 @@ Rectangle {
         anchors.centerIn: parent
         size: 20
         paths: btn.paths
-        color: btn.accent ? "#6EE7F9" : "#E6E8EC"
+        color: btn.accent ? btn.accentColor : "#E6E8EC"
         Behavior on color { ColorAnimation { duration: 160 } }
     }
 
