@@ -135,7 +135,7 @@ Windows, so it needs no FFmpeg installed: the libraries ship with PySide6. On a
 | whole screen | 103 % of one core | 6.6 MB for 8 s |
 | 1280×720 area | 59 % of one core | 1.0 MB for 8 s |
 
-It costs the package ~15 MB: the portable archive goes from 78 to 93 MB.
+It costs the package ~12 MB: the portable archive goes from 78 to 91 MB.
 
 ## Settings
 
