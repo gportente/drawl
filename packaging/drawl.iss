@@ -2,7 +2,7 @@
 ; Compiled by tools/build.ps1, which first produces dist/drawl/ with PyInstaller.
 
 #define AppName "drawl"
-#define AppVersion "0.1.0"
+#define AppVersion "0.2.0"
 #define AppPublisher "Gabriele Portente"
 #define AppExe "drawl.exe"
 
